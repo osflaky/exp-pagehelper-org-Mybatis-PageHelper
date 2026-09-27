@@ -1,0 +1,31 @@
+name: Maven test
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  mvn_verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - os: macos-latest
+          java: 8
+          arch: arm64
+          runner: macos-latest
+          expander_leg: macos-latest-8-arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Maven Central Repository
+      uses: actions/setup-java@v3
+      with:
+        java-version: '${{ matrix.java }}'
+        distribution: 'temurin'
+        architecture: ${{ (matrix.os == 'windows-latest' && matrix.arch == 
+          'arm64' && matrix.java == 8) && 'x64' || '' }}
+    - name: Run the Maven verify phase
+      run: mvn --batch-mode --update-snapshots test
+    name: mvn_verify [${{ matrix.expander_leg }}]
+    timeout-minutes: 150
